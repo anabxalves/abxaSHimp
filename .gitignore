@@ -2,3 +2,4 @@ extras
 shell
 shell.o
 mySHfunc.o
+.vscode
