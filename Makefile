@@ -10,11 +10,11 @@ $(TARGET): $(OBJS) # target : prerequisito
 
 %.o: %.c # target : prerequisito
 	$(CC) -c -o $@ $<
-# target atual
-# prerequisito específico de cada .o (que seria seu correspondente .c)
+# @ => target atual
+# < =>prerequisito específico de cada .o (que seria seu correspondente .c)
 
 .PHONY: clean
-# phony utilizado pois não temos um arquivo específico e sim um target para alguma ação específica (nesse caso o clean definido abaixo)
+# utilizado pois não temos um arquivo específico e sim um target para alguma ação específica (nesse caso o clean definido abaixo)
 
 clean:
 	rm $(OBJS) $(TARGET)

@@ -35,12 +35,15 @@ int main(int argc, char *argv[])
     /* modo interativo */
     
     int isExited = 0;
+    int style = 0; // 0 = sequential / 1 = parallel
+    char prompt[4] = "seq";
 
     while(!isExited)
     {
-        printf("abxa seq> ");
+        printf("abxa %s> ", prompt);
         
         char line[MAX], *aux;
+        /* usar strrchr(); */
         
         if(fgets(line, MAX, stdin) == NULL)
         {
@@ -57,28 +60,47 @@ int main(int argc, char *argv[])
         if(isEmpty(line)) continue; // tratamento de erro
         else
         {
-            char commands[MAX];
-            int j=0;
+            char commands[MAX][MAX];
+            int j=0; //serve como cont do array commands (j+1)
             aux = strtok(line, ";");
             while(aux != NULL)
             {
-                getParsed(aux, &commands[j]);
-                if(strcmp(&commands[j], "exit") == 0)
+                getParsed(aux, commands[j]);
+
+                if(strcmp(commands[j], "exit") == 0)
                 {
                     isExited = 1;
-                    exit(0);
+                    break;
                 }
-                else
+                
+                if(strcmp(commands[j], "style parallel") == 0)
                 {
-                    if(!isEmpty(&commands[j]))
-                    {
-                        printf("Executing: %s\n", &commands[j]);
-                        j++;
-                    }
-                    aux = strtok(NULL, ";");
+                    style = 1;
+                    strcpy(prompt, "par");
                 }
+                else if(strcmp(commands[j], "style sequential") == 0)
+                {
+                    style = 0;
+                    strcpy(prompt, "seq");
+                }
+                else if(!isEmpty(commands[j])) j++;
+
+                aux = strtok(NULL, ";");
             }
+            strcpy(commands[j], "\0"); 
+
+            for (int i = 0; i < j; i++) printf("Executing: %s\n", commands[i]);
+
         }
+        
+        /*
+        usar o getCommandArg para ver quantos elementos o comando tem 
+    
+        perguntar pra erico se vai ter troca de estilo no meio das prompts
+            caso sim, fazer n arrays para cada troca de estilo
+
+        perguntar se batch pode ser paralelo
+        */
     }
 
     return 0;

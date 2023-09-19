@@ -13,5 +13,7 @@ int hasExit(FILE *file); // confere se existe (1) ou não (0) o comando exit
 void printFile(FILE *file); // imprime os comandos lidos no arquivo, até o exit
 void getParsed(char *origin, char *result); // separa os comandos que estão na mesma linha
 int isEmpty(char *line);
+int execution(int style, char *commands[MAX], int qtdCommands);
+int getCommandArg(char *origin, char *result[MAX]);
 
 #endif
