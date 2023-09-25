@@ -2,20 +2,20 @@
 
 int hasExit(FILE *file)
 {
-    char line[MAX];
+    char line[max];
 
-    while(fgets(line, MAX, file) != NULL)
+    while(fgets(line, max, file) != NULL)
     {
         for(int i = 0; i < strlen(line); i++)
         {
             if(line[i] == '\n') line[i] = 0;
         }
 
-        char flagExit[MAX];
+        char flagExit[max];
         char *aux = strtok(line, ";");
         while(aux != NULL)
         {
-            getParsed(aux, flagExit);
+            removeExcessSpaces(aux, flagExit);
 
             if(strcmp(flagExit, "exit") == 0) return 1;
             
@@ -25,41 +25,24 @@ int hasExit(FILE *file)
     return 0;
 }
 
-void printFile(FILE *file)
+int isEmpty(char *line)
 {
-    char line[MAX], *aux;
+    int count = 0;
 
-    while(fgets(line, MAX, file) != NULL)
+    for(int i=0; i<strlen(line); i++)
     {
-        for(int i = 0; i < strlen(line); i++)
-        {
-            if(line[i] == '\n') line[i] = 0;
-        }
-        char commands[MAX];
-        int j=0;
-        aux = strtok(line, ";");
-        while(aux != NULL)
-        {
-            getParsed(aux, &commands[j]);
-
-            if(strcmp(&commands[j], "exit") == 0) break;
-            else
-            {
-                printf("Executing: %s\n", &commands[j]);
-                j++;
-                aux = strtok(NULL, ";");
-            }
-        }
-        
-        if(strcmp(line, "exit") == 0) break;
+        if(line[i] > 32) count++;
     }
+
+    if(count > 0) return 0;
+    else return 1;
 }
 
-void getParsed(char *origin, char *result)
+void removeExcessSpaces(char *origin, char* result)
 {
-    char temp[MAX];
+    char temp[MAX_LINE/2 +1];
     int flagLastSpace = 0, j=0;
-    
+
     for(int i = 0; i < strlen(origin); i++)
     {
         if(origin[i] == ' ')
@@ -84,74 +67,98 @@ void getParsed(char *origin, char *result)
     strcpy(result, temp);
 }
 
-int isEmpty(char *line)
+void *commandRunner(void *command)
 {
-    int count = 0;
-
-    for(int i=0; i<strlen(line); i++)
-    {
-        if(line[i] > 32) count++;
-    }
-
-    if(count > 0) return 0;
-    else return 1;
+    system(command);
+    pthread_exit(0);
 }
 
-int execution(int style, char *commands[MAX], int qtdCommands)
+void executeList(char** list, int size)
 {
-    pid_t pai;
+    char** aux = list;
 
-    pai = fork();
-
-    if(pai < 0)
+    for(int i=0; i< size; i++)
     {
-        fprintf(stderr, "Fork Failed.");
-		return 1;
+        printf("- Executing '%s' -\n", aux[i]);
+        system(aux[i]);
     }
-    else if(pai == 0) // processo filho
-    {
-        if(style == 0) // sequential
-        {
-            char elements[MAX][MAX];
-            int qtdElements[MAX];
-           
-            for(int i=0; i< qtdCommands; i++) qtdElements[i] = getCommandArg(commands, elements[i]);
-
-            for(int j=0; j< qtdCommands; j++)
-            {
-                execvp(elements[j], qtdElements[j]);
-            }
-        }
-        else if(style == 1) // parallel
-        {
-            /* comando system ao invés do exec */
-            
-        }
-
-    }
-    else // pai
-    {
-        wait(NULL);
-    }
-
-    return 1;
 }
 
-int getCommandArg(char *origin, char *result[MAX])
+void executeSequential(char *list)
 {
-    char *temp, ch = '\\';
-    int j=0;
+    char *arg = strdup(list);
+    int qtdCommands = 0;
+    char *commands[MAX_LINE/2 + 1];
+    qtdCommands = getCommandArg(list, commands, (MAX_LINE/2 + 1));
 
-    strcpy(temp, origin);
-    strcpy(temp, strrchr(temp, ch)); // tratar casos em que o path é informado
+    pid_t child = fork();
+    int status;
 
-    temp = strtok(temp, " ");
-    while(temp != NULL)
+    if (child < 0)
     {
-        strcpy(result[j], temp);
-        j++;
-        temp = strtok(NULL, " ");
+        perror("fork");
+        exit(EXIT_FAILURE);
     }
+    else if (child == 0)
+    {
+        printf("- Executing '%s' -\n", arg);
+        
+        execvp(commands[0], commands);
+        perror("execvp");
+        exit(EXIT_FAILURE);
+    }
+    else
+    {
+        waitpid(child, &status, 0);
 
-    return j;
+        if (!WIFEXITED(status)) {
+            perror("Error in Child Process.\n");
+            printf("Child process did not exit normally.\n");
+        }
+    }
+    memset(commands, 0, qtdCommands);
+}
+
+int getCommandArg(char *command, char *parts[], int maxParts)
+{
+    int qtdArgs = 0;
+    char *aux = strtok(command, " ");
+
+    while (aux != NULL && qtdArgs < maxParts - 1)
+    {
+        parts[qtdArgs] = aux;
+        qtdArgs++;
+        aux = strtok(NULL, " ");
+    }
+    parts[qtdArgs] = NULL; // LAST ELEMENT NULL
+
+    return qtdArgs;
+}
+
+void executeParallel(char *parsed[], int contCommands)
+{
+    pthread_t commandThreads[contCommands];
+    int commandControl[contCommands], cont = 0, shouldExit = 0;
+
+    for(int i=0; i < contCommands; i++)
+    {
+        commandControl[i] = pthread_create(&commandThreads[i], NULL, commandRunner, parsed[i]);
+        
+        if(commandControl[i] != 0)
+        {
+            perror("pthread_create error");
+            exit(EXIT_FAILURE);
+        }
+        cont++;
+    }
+    
+    for (int i = 0; i < cont; i++)
+    {
+        printf("- Executing '%s' -\n", parsed[i]);
+        if (pthread_join(commandThreads[i], NULL) != 0)
+        {
+            perror("pthread_join");
+            exit(EXIT_FAILURE);
+        }
+    }
 }

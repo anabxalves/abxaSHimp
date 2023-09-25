@@ -1,4 +1,4 @@
-CC = gcc #setando compilador em gcc
+CC = gcc # setando compilador em gcc
 SRCS = shell.c mySHfunc.c # setando sources (main e biblioteca)
 OBJS = $(SRCS:.c=.o) # setando objetos (arquivos do source são transformando de .c em .o)
 TARGET = shell # nome do executável resultante (conforme requisito)

@@ -7,13 +7,16 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <pthread.h>
-#define MAX 100
+#define MAX_LINE 80
+#define max 100
 
 int hasExit(FILE *file); // confere se existe (1) ou não (0) o comando exit 
-void printFile(FILE *file); // imprime os comandos lidos no arquivo, até o exit
-void getParsed(char *origin, char *result); // separa os comandos que estão na mesma linha
+void executeList(char** list, int size);
 int isEmpty(char *line);
-int execution(int style, char *commands[MAX], int qtdCommands);
-int getCommandArg(char *origin, char *result[MAX]);
+void removeExcessSpaces(char *origin, char* result);
+void *commandRunner(void *command);
+void executeSequential(char *list);
+int getCommandArg(char *command, char *parts[], int maxParts);
+void executeParallel(char *parsed[], int contCommands);
 
 #endif
