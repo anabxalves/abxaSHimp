@@ -69,7 +69,9 @@ void removeExcessSpaces(char *origin, char* result)
 
 void *commandRunner(void *command)
 {
-    system(command);
+    if(strcmp(command, "No commands") == 0) printf("No commands\n");
+    else system(command);
+
     pthread_exit(0);
 }
 
@@ -138,7 +140,7 @@ int getCommandArg(char *command, char *parts[], int maxParts)
 void executeParallel(char *parsed[], int contCommands)
 {
     pthread_t commandThreads[contCommands];
-    int commandControl[contCommands], cont = 0, shouldExit = 0;
+    int commandControl[contCommands], cont = 0;
 
     for(int i=0; i < contCommands; i++)
     {
@@ -154,7 +156,7 @@ void executeParallel(char *parsed[], int contCommands)
     
     for (int i = 0; i < cont; i++)
     {
-        printf("- Executing '%s' -\n", parsed[i]);
+        if(strcmp(parsed[i], "No commands") != 0) printf("- Executing '%s' -\n", parsed[i]);
         if (pthread_join(commandThreads[i], NULL) != 0)
         {
             perror("pthread_join");

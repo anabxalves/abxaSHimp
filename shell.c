@@ -4,7 +4,7 @@ int shouldRun = 1;
 
 int main(int argc, char *argv[])
 {
-    char args[MAX_LINE/2 + 1], prompt[4] = "seq";
+    char args[MAX_LINE/2 + 1], prompt[4] = "seq", lastCommand[max] = "No commands";
     int styleType = 0, styleChange;
 
     if(argc == 2) // BATCH MODE
@@ -70,12 +70,23 @@ int main(int argc, char *argv[])
                     {
                         styleType = 1;
                         styleChange = 1;
+                        continue;
                     }
                     else if(strcmp(temp[j], "style sequential") == 0)
                     {
                         styleType = 0;
                         styleChange = 1;
+                        continue;
                     }
+                    else if(strcmp(temp[j], "!!") == 0)
+                    {
+                        if(j != 0) strcpy(temp[j], temp[j-1]);
+                        else strcpy(temp[j], lastCommand);
+
+                        continue;
+                    }
+
+                strcpy(lastCommand, temp[j]);
                 }
 
                 if(shouldRun == 1)
@@ -99,7 +110,11 @@ int main(int argc, char *argv[])
                         {
                             if(styleType == 0)
                             {
-                                for(int i=0; i<contCommands; i++) executeSequential(temp[i]);
+                                for(int i=0; i<contCommands; i++)
+                                {
+                                    if(strcmp(temp[i], "No commands") == 0) printf("No commands\n");
+                                    else executeSequential(temp[i]);
+                                }
                             }
                             else if(styleType == 1) executeParallel(temp, contCommands);
 
@@ -176,13 +191,24 @@ int main(int argc, char *argv[])
                     styleType = 1;
                     styleChange = 1;
                     strcpy(prompt, "par");
+                    continue;
                 }
                 else if(strcmp(temp[j], "style sequential") == 0)
                 {
                     styleType = 0;
                     styleChange = 1;
                     strcpy(prompt, "seq");
+                    continue;
                 }
+                else if(strcmp(temp[j], "!!") == 0)
+                {
+                    if(j != 0) strcpy(temp[j], temp[j-1]);
+                    else strcpy(temp[j], lastCommand);
+
+                    continue;
+                }
+
+                strcpy(lastCommand, temp[j]);
             }
 
             if(shouldRun == 1)
@@ -203,7 +229,11 @@ int main(int argc, char *argv[])
                     {
                         if(styleType == 0)
                         {
-                            for(int i=0; i<contCommands; i++) executeSequential(temp[i]);
+                            for(int i=0; i<contCommands; i++)
+                           {
+                                if(strcmp(temp[i], "No commands") == 0) printf("No commands\n");
+                                else executeSequential(temp[i]);
+                            }
                         }
                         else if(styleType == 1) executeParallel(temp, contCommands);
 

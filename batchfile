@@ -1,6 +1,7 @@
-ls; ls -l
+ls; ls -a
 style parallel
 pwd
-sleep 1
+echo 1; echo 2; echo 3; echo 4; echo 5; echo 6; echo 7; echo 8; echo 9; echo 10;
+sleep 5 &
+ls -l > teste; ls | sort -k 5 >> teste
 exit;
-ls -l; ls
