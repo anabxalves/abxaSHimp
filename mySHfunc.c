@@ -157,6 +157,7 @@ void executeParallel(char *parsed[], int contCommands)
     for (int i = 0; i < cont; i++)
     {
         if(strcmp(parsed[i], "No commands") != 0) printf("- Executing '%s' -\n", parsed[i]);
+
         if (pthread_join(commandThreads[i], NULL) != 0)
         {
             perror("pthread_join");
@@ -235,7 +236,6 @@ void executePipe(char **commands)
     close(pipe_fd[0]);
     close(pipe_fd[1]);
 
-    // Wait for the child processes to finish
     waitpid(child_pid1, &status1, 0);
     waitpid(child_pid2, &status2, 0);
 

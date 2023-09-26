@@ -10,7 +10,7 @@
 #define MAX_LINE 100
 #define max 120
 
-int hasExit(FILE *file); // confere se existe (1) ou não (0) o comando exit 
+int hasExit(FILE *file);
 void executeList(char** list, int size);
 int isEmpty(char *line);
 void removeExcessSpaces(char *origin, char* result);

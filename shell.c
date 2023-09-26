@@ -15,7 +15,6 @@ int main(int argc, char *argv[])
     else if(argc == 2) // BATCH MODE
     {
         FILE *file;
-
         file = fopen(argv[1], "r");
 
         if(file == NULL) // tratamento de erro
@@ -25,7 +24,7 @@ int main(int argc, char *argv[])
             exit(1);
         }
         
-        if(!hasExit(file))
+        if(!hasExit(file)) // tratamento de erro
         {
             printf("File has no exit command.\n");
             fclose(file);
@@ -33,7 +32,6 @@ int main(int argc, char *argv[])
         }
 
         rewind(file);
-
         char line[max];
 
         while(fgets(line, max, file) != NULL)
@@ -123,15 +121,25 @@ int main(int argc, char *argv[])
                                         if(hasChar(temp[i], '|'))
                                         {
                                             printf("- Executing '%s' -\n", temp[i]);
-                                            char *pipeCommands[2];
+                                            
+                                            if(hasChar(temp[i], '>') == 1 || hasChar(temp[i], '<')) system(temp[i]);
+                                            else
+                                            {
+                                                char *pipeCommands[2];
 
-                                            pipeCommands[0] = strtok(temp[i], "|");
-                                            pipeCommands[1] = strtok(NULL, "|");
+                                                pipeCommands[0] = strtok(temp[i], "|");
+                                                pipeCommands[1] = strtok(NULL, "|");
 
-                                            myTrimSpaces(pipeCommands[0]);
-                                            myTrimSpaces(pipeCommands[1]);
+                                                myTrimSpaces(pipeCommands[0]);
+                                                myTrimSpaces(pipeCommands[1]);
 
-                                            executePipe(pipeCommands);
+                                                executePipe(pipeCommands);
+                                            }
+                                        }
+                                        else if(hasChar(temp[i], '>') == 1 || hasChar(temp[i], '<'))
+                                        {
+                                            printf("- Executing '%s' -\n", temp[i]);
+                                            system(temp[i]);
                                         }
                                         else executeSequential(temp[i]);
                                     }
@@ -151,7 +159,6 @@ int main(int argc, char *argv[])
                             }
                         }
                     }
-
                     for(int j=0; j < contCommands; j++) free(temp[j]);
                 }
                 else exit(0);
@@ -159,17 +166,16 @@ int main(int argc, char *argv[])
                 memset(line, 0, max);
             }
         }
-
         fclose(file);
     }
-    else
+    else // INTERACTIVE MODE
     {
         while(shouldRun == 1)
         {
             styleChange = 0;
 
             printf("abxa %s> ", prompt);
-            if(fgets(args, sizeof(args), stdin) == NULL)
+            if(fgets(args, sizeof(args), stdin) == NULL) // tratamento de erro
             {
                 printf("\nError reading commands.\n");
                 exit(1);
@@ -228,7 +234,6 @@ int main(int argc, char *argv[])
 
                     continue;
                 }
-
                 strcpy(lastCommand, temp[j]);
             }
 
@@ -246,7 +251,7 @@ int main(int argc, char *argv[])
                         perror("pid");
                         exit(1);
                     }
-                    else if(process == 0)
+                    else if(process == 0) // CHILD
                     {
                         if(styleType == 0)
                         {
@@ -259,15 +264,24 @@ int main(int argc, char *argv[])
                                     {
                                         printf("- Executing '%s' -\n", temp[i]);
 
-                                        char *pipeCommands[2];
+                                        if(hasChar(temp[i], '>') == 1 || hasChar(temp[i], '<') == 1) system(temp[i]);
+                                        else
+                                        {
+                                            char *pipeCommands[2];
 
-                                        pipeCommands[0] = strtok(temp[i], "|");
-                                        pipeCommands[1] = strtok(NULL, "|");
+                                            pipeCommands[0] = strtok(temp[i], "|");
+                                            pipeCommands[1] = strtok(NULL, "|");
 
-                                        myTrimSpaces(pipeCommands[0]);
-                                        myTrimSpaces(pipeCommands[1]);
+                                            myTrimSpaces(pipeCommands[0]);
+                                            myTrimSpaces(pipeCommands[1]);
 
-                                        executePipe(pipeCommands);
+                                            executePipe(pipeCommands);
+                                        }
+                                    }
+                                    else if(hasChar(temp[i], '>') == 1 || hasChar(temp[i], '<'))
+                                    {
+                                        printf("- Executing '%s' -\n", temp[i]);
+                                        system(temp[i]);
                                     }
                                     else executeSequential(temp[i]);
                                 }
@@ -277,7 +291,7 @@ int main(int argc, char *argv[])
 
                         exit(EXIT_SUCCESS);
                     }
-                    else
+                    else // PARENT
                     {
                         waitpid(process, &status, 0);
                         if (!WIFEXITED(status))

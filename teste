@@ -1,15 +1,8 @@
-total 200
--rw-r--r--@ 1 anabxalves  staff    700 Sep 21 18:29 Makefile
--rw-r--r--@ 1 anabxalves  staff      0 Sep 12 10:55 README.md
--rw-r--r--@ 1 anabxalves  staff    182 Sep 25 21:39 batchfile
-drwxr-xr-x@ 3 anabxalves  staff     96 Sep 19 09:29 extras
--rw-r--r--@ 1 anabxalves  staff   5632 Sep 25 21:37 mySHfunc.c
--rw-r--r--@ 1 anabxalves  staff    702 Sep 25 21:13 mySHfunc.h
--rw-r--r--@ 1 anabxalves  staff   7168 Sep 25 21:37 mySHfunc.o
--rwxr-xr-x@ 1 anabxalves  staff  51954 Sep 25 21:40 shell
--rw-r--r--@ 1 anabxalves  staff   9558 Sep 25 21:40 shell.c
--rw-r--r--@ 1 anabxalves  staff   7464 Sep 25 21:40 shell.o
--rw-r--r--@ 1 anabxalves  staff      0 Sep 25 21:41 teste
+.
+..
+.git
+.gitignore
+.vscode
 Makefile
 README.md
 batchfile
