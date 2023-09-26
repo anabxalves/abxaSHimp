@@ -40,7 +40,7 @@ int isEmpty(char *line)
 
 void removeExcessSpaces(char *origin, char* result)
 {
-    char temp[MAX_LINE/2 +1];
+    char temp[MAX_LINE];
     int flagLastSpace = 0, j=0;
 
     for(int i = 0; i < strlen(origin); i++)
@@ -90,8 +90,8 @@ void executeSequential(char *list)
 {
     char *arg = strdup(list);
     int qtdCommands = 0;
-    char *commands[MAX_LINE/2 + 1];
-    qtdCommands = getCommandArg(list, commands, (MAX_LINE/2 + 1));
+    char *commands[MAX_LINE];
+    qtdCommands = getCommandArg(list, commands, (MAX_LINE));
 
     pid_t child = fork();
     int status;
@@ -163,4 +163,103 @@ void executeParallel(char *parsed[], int contCommands)
             exit(EXIT_FAILURE);
         }
     }
+}
+
+int hasChar(char *command, char comp)
+{
+    for(int i = 0; i < strlen(command); i++)
+    {
+        if(command[i] == comp) return 1;
+    }
+    return 0;
+}
+
+void executePipe(char **commands)
+{
+    pid_t child_pid1, child_pid2;
+    int pipe_fd[2], status1, status2;
+
+    if (pipe(pipe_fd) == -1)
+    {
+        perror("pipe");
+        exit(EXIT_FAILURE);
+    }
+
+    child_pid1 = fork();
+
+    if (child_pid1 < 0)
+    {
+        perror("fork");
+        exit(EXIT_FAILURE);
+    }
+    else if(child_pid1 == 0)
+    {
+        char *pipeParsed1[MAX_LINE];
+        int qtdCommands1 = getCommandArg(commands[0], pipeParsed1, (MAX_LINE));
+
+        close(pipe_fd[0]);
+
+        dup2(pipe_fd[1], STDOUT_FILENO);
+        close(pipe_fd[1]);
+
+        execvp(pipeParsed1[0], pipeParsed1);
+        perror("execvp");
+        exit(EXIT_FAILURE);
+
+        memset(pipeParsed1, 0, qtdCommands1);
+    }
+
+    child_pid2 = fork();
+    if (child_pid2 < 0)
+    {
+        perror("fork");
+        exit(EXIT_FAILURE);
+    }
+    else if(child_pid2 == 0)
+    {
+        char *pipeParsed2[MAX_LINE];
+        int qtdCommands2 = getCommandArg(commands[1], pipeParsed2, (MAX_LINE));
+
+        close(pipe_fd[1]);
+
+        dup2(pipe_fd[0], STDIN_FILENO);
+        close(pipe_fd[0]);
+
+        execvp(pipeParsed2[0], pipeParsed2);
+        perror("execvp");
+        exit(EXIT_FAILURE);
+        
+        memset(pipeParsed2, 0, qtdCommands2);
+    }
+
+    close(pipe_fd[0]);
+    close(pipe_fd[1]);
+
+    // Wait for the child processes to finish
+    waitpid(child_pid1, &status1, 0);
+    waitpid(child_pid2, &status2, 0);
+
+    if (!WIFEXITED(status1) || !WIFEXITED(status2)) {
+        perror("Error in Grandchild Process.\n");
+        printf("Grandchild process did not exit normally.\n");
+    }
+}
+
+void myTrimSpaces(char *command)
+{
+    char temp[MAX_LINE];
+    int j = 0;
+
+    for(int i = 0; i < strlen(command); i++)
+    {
+        if(command[i] == ' ' && i == 0) continue;
+        else if(command[i] == ' ' && i == strlen(command) - 1) continue;
+        else
+        {
+            temp[j] = command[i];
+            j++;
+        }
+    }
+    temp[j] = '\0';
+    strcpy(command, temp);
 }

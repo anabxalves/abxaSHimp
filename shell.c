@@ -4,10 +4,15 @@ int shouldRun = 1;
 
 int main(int argc, char *argv[])
 {
-    char args[MAX_LINE/2 + 1], prompt[4] = "seq", lastCommand[max] = "No commands";
+    char args[MAX_LINE], prompt[4] = "seq", lastCommand[max] = "No commands";
     int styleType = 0, styleChange;
 
-    if(argc == 2) // BATCH MODE
+    if(argc > 2)
+    {
+        printf("Too many arguments\n");
+        return 1;
+    }
+    else if(argc == 2) // BATCH MODE
     {
         FILE *file;
 
@@ -43,7 +48,7 @@ int main(int argc, char *argv[])
 
                 if(isEmpty(line)) continue; // tratamento de erro
                 
-                char *temp[MAX_LINE/2 + 1];
+                char *temp[MAX_LINE];
                 int contCommands = 0;
                 
                 char *aux = strtok(line, ";");
@@ -113,7 +118,23 @@ int main(int argc, char *argv[])
                                 for(int i=0; i<contCommands; i++)
                                 {
                                     if(strcmp(temp[i], "No commands") == 0) printf("No commands\n");
-                                    else executeSequential(temp[i]);
+                                    else
+                                    {
+                                        if(hasChar(temp[i], '|'))
+                                        {
+                                            printf("- Executing '%s' -\n", temp[i]);
+                                            char *pipeCommands[2];
+
+                                            pipeCommands[0] = strtok(temp[i], "|");
+                                            pipeCommands[1] = strtok(NULL, "|");
+
+                                            myTrimSpaces(pipeCommands[0]);
+                                            myTrimSpaces(pipeCommands[1]);
+
+                                            executePipe(pipeCommands);
+                                        }
+                                        else executeSequential(temp[i]);
+                                    }
                                 }
                             }
                             else if(styleType == 1) executeParallel(temp, contCommands);
@@ -150,7 +171,7 @@ int main(int argc, char *argv[])
             printf("abxa %s> ", prompt);
             if(fgets(args, sizeof(args), stdin) == NULL)
             {
-                printf("Error reading commands.\n");
+                printf("\nError reading commands.\n");
                 exit(1);
             }
 
@@ -163,7 +184,7 @@ int main(int argc, char *argv[])
 
             if(isEmpty(args)) continue; // tratamento de erro
 
-            char *temp[MAX_LINE/2 + 1];
+            char *temp[MAX_LINE];
             int contCommands = 0;
 
             char *aux = strtok(args, ";");
@@ -230,9 +251,26 @@ int main(int argc, char *argv[])
                         if(styleType == 0)
                         {
                             for(int i=0; i<contCommands; i++)
-                           {
+                            {
                                 if(strcmp(temp[i], "No commands") == 0) printf("No commands\n");
-                                else executeSequential(temp[i]);
+                                else
+                                {
+                                    if(hasChar(temp[i], '|'))
+                                    {
+                                        printf("- Executing '%s' -\n", temp[i]);
+
+                                        char *pipeCommands[2];
+
+                                        pipeCommands[0] = strtok(temp[i], "|");
+                                        pipeCommands[1] = strtok(NULL, "|");
+
+                                        myTrimSpaces(pipeCommands[0]);
+                                        myTrimSpaces(pipeCommands[1]);
+
+                                        executePipe(pipeCommands);
+                                    }
+                                    else executeSequential(temp[i]);
+                                }
                             }
                         }
                         else if(styleType == 1) executeParallel(temp, contCommands);

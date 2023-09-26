@@ -7,8 +7,8 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <pthread.h>
-#define MAX_LINE 80
-#define max 100
+#define MAX_LINE 100
+#define max 120
 
 int hasExit(FILE *file); // confere se existe (1) ou não (0) o comando exit 
 void executeList(char** list, int size);
@@ -18,5 +18,8 @@ void *commandRunner(void *command);
 void executeSequential(char *list);
 int getCommandArg(char *command, char *parts[], int maxParts);
 void executeParallel(char *parsed[], int contCommands);
+int hasChar(char *command, char comp);
+void executePipe(char **commands);
+void myTrimSpaces(char *command);
 
 #endif
